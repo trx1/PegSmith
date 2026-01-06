@@ -672,13 +672,14 @@ module holders() {
 module holder_holes() {
 
   //height = Bottom_Thickness > 0 ? Holder_Height : max(holder_height, pegboard_height);
-  height = holder_height; //Bottom_Thickness > 0 ? Holder_Height : max(holder_height, Strict_Holder_Height ? holder_height : pegboard_height);
+  //height = holder_height; //Bottom_Thickness > 0 ? Holder_Height : max(holder_height, Strict_Holder_Height ? holder_height : pegboard_height);
+  height = Bottom_Thickness > 0 ? Holder_Height : max(holder_height, Strict_Holder_Height ? holder_height : pegboard_height);
 
   if (holder_x_size > 0 && holder_y_size > 0) {
 
     // --- HEIGHTS ---
-    H1 = height + .002; // purple block height
-    H2 = max(holder_height, pegboard_height) - height; // green block height
+    H1 = holder_height + .002; // purple block height
+    H2 = height - H1;
 
     for (x = [1:Holder_Count_Wide]) {
       for (y = [0:Holder_Count_Deep - 1]) {
@@ -721,31 +722,24 @@ module holder_holes() {
               holder_roundness,
               Taper_Angle
             );
-          // round_rect_ex(
-          //   Holder_Depth,
-          //   Holder_Width,
-          //   bottom_holder_y_size,
-          //   bottom_holder_x_size,
-          //   H1,
-          //   holder_roundness * taper_ratio + epsilon,
-          //   holder_roundness * taper_ratio + epsilon
-          // );
+          
         }
 
         // ---------------------------
         //  EXTENSION
         // ---------------------------
         if (taper_ratio != 1 && Open_Below_Taper) {
+          echo(translateZ = translateZ, H1 = H1, H2 = H2, holder_height = holder_height, Offset_Amount = Offset_Amount);
           scale = bottom_holder_x_size / Holder_Depth;
           radiusBottom = min(holder_roundness * scale, min(bottom_holder_x_size, bottom_holder_y_size) / 2);
-          translate(
+                  translate(
             [
               // X
               translateX,
               // Y
               translateY,
               // Z
-              -(height + H2 / 2), //(translateZ - holder_height + (H2 / 2)),
+              translateZ - pegboard_height/2// - (H2/2) //-(H1 + H2), //(translateZ - holder_height + (H2 / 2)),
             ]
           ) {
 
@@ -753,7 +747,7 @@ module holder_holes() {
               round_rect_ex(
                 x=bottom_holder_x_size,
                 y=bottom_holder_y_size,
-                z=H2,
+                z=pegboard_height,
                 radius=radiusBottom,
                 taper_angle=0
               );
@@ -822,7 +816,6 @@ module holder_front_cutout() {
         //  GREEN TAPER EXTENSION
         // ---------------------------
         if (taper_ratio != 1 && Open_Below_Taper) {
-          translateZ2 = translateZ - H1 / 2 - H2 / 2;
           translate(
             [
               // X
@@ -873,12 +866,16 @@ module finalHolder() {
       //   hull() {
       holderboard();
       rotate([0, holder_angle, 0])
+      difference() {
         holders();
-      // }
-      rotate([0, holder_angle, 0]) {
-        holder_holes();
+         holder_holes();
         holder_front_cutout();
       }
+      // }
+      // rotate([0, holder_angle, 0]) {
+      //   holder_holes();
+      //   holder_front_cutout();
+      // }
       // }
     }
   }
