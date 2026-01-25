@@ -71,13 +71,15 @@ Step_Offset_Amount = 5;
 // set an angle for the holder to prevent object from sliding or to view it better from the top
 Holder_Angle = 0.0; // [-45:80]
 
-// How much to reinforce the holders [0-100%]
-Strength_Factor_Percent = 0; // [0:100]
+
 
 /* [Holder Strength] */
 
 // How thick are the walls. Hint: 6*extrusion width produces the best results.
 Wall_Thickness = 1.85;
+
+// How much to reinforce the holders [0-100%]
+Strength_Factor_Percent = 0; // [0:100]
 
 // Have pins for every hole in the pegboard. Default: false (only pins on top and bottom rows)
 Full_Array_Of_Pins = false;
