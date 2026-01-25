@@ -343,7 +343,7 @@ module pinboard(isStepped = false) {
           ) {
             if (isStepped) {
               translate([0, 0, Wall_Thickness])
-              cube([Peg_Size, Peg_Size, Wall_Thickness], true);
+                cube([Peg_Size, Peg_Size, Wall_Thickness], true);
             } else {
               cylinder(r=Peg_Size / 2, h=Wall_Thickness);
             }
@@ -357,7 +357,7 @@ module pinboard(isStepped = false) {
           ) {
             if (isStepped) {
               translate([0, 0, Wall_Thickness])
-              cube([Peg_Size, Peg_Size, Wall_Thickness], true);
+                cube([Peg_Size, Peg_Size, Wall_Thickness], true);
             } else {
               cylinder(r=Peg_Size / 2, h=Wall_Thickness);
             }
@@ -371,7 +371,7 @@ module pinboard(isStepped = false) {
           ) {
             if (isStepped) {
               translate([0, 0, Wall_Thickness])
-              cube([Peg_Size, Peg_Size, Wall_Thickness], true);
+                cube([Peg_Size, Peg_Size, Wall_Thickness], true);
             } else {
               cylinder(r=Peg_Size / 2, h=Wall_Thickness);
             }
@@ -385,7 +385,7 @@ module pinboard(isStepped = false) {
           ) {
             if (isStepped) {
               translate([0, 0, Wall_Thickness])
-              cube([Peg_Size, Peg_Size, Wall_Thickness], true);
+                cube([Peg_Size, Peg_Size, Wall_Thickness], true);
             } else {
               cylinder(r=Peg_Size / 2, h=Wall_Thickness);
             }
@@ -728,9 +728,8 @@ module finalHolder() {
     }
   } else {
 
-    //union() {
     pinboard();
-    //holderboard();
+
     rotate([0, holder_angle, 0]) {
       difference() {
         holders();
@@ -738,7 +737,6 @@ module finalHolder() {
         holder_front_cutout();
       }
     }
-    //}
   }
 }
 
