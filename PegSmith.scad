@@ -103,10 +103,9 @@ holder_sides = max(50, min(20, holder_x_size * 2));
 holder_total_x = Holder_Count_Wide * (x_spacing);
 holder_total_x_offset = (Holder_Count_Wide - 1) * (x_spacing);
 holder_total_y = Holder_Count_Deep * (y_spacing);
-holder_roundness = min(Corner_Radius, Holder_Depth / 2, Holder_Height / 2);
+holder_roundness = min(Corner_Radius, Holder_Width/2, Holder_Depth/2);
 
 shrink = tan(abs(Taper_Angle)) * (holder_height - Bottom_Thickness == 0 ? Lower_Holder_Hole_Height_Minimum : 0);
-
 // Compute global bottom size (used only for tapered corners)
 bottom_holder_x_size =
   Lower_Holder_Hole_Diameter == 0 ?
