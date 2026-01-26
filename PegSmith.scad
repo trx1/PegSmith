@@ -5,7 +5,7 @@
 /* [Holder Size] */
 
 // width of the orifice
-Holder_Width = 10; //.1
+Holder_Width = 30; //.1
 
 // depth of the orifice
 Holder_Depth = 10; //.1
@@ -19,7 +19,7 @@ Strict_Holder_Height = false;
 /* [Holder Counts] */
 
 // how many holders along the pegboard
-Holder_Count_Wide = 1; // [0:50]
+Holder_Count_Wide = 2; // [0:50]
 
 // how many holders outward from the pegboard
 Holder_Count_Deep = 2; // [1:25]
@@ -45,7 +45,7 @@ Lower_Holder_Hole_Diameter = 0; //.1
 Lower_Holder_Hole_Height_Minimum = 0;
 
 // What percentage cu cut in the front (example to slip in a cable or make the tool snap from the side)
-holder_front_slot_width = 10; // [0:100]
+holder_front_slot_width = 0; // [0:100]
 
 /* [Holder Positioning Adjustments] */
 
@@ -64,7 +64,7 @@ Step_Offset_Amount = 5;
 Offset_Holder_Rows = false;
 
 // set an angle for the holder to prevent object from sliding or to view it better from the top
-Holder_Angle = 0.0; // [-45:80]
+Holder_Angle = 15; // [-45:80]
 
 /* [Holder Strength] */
 
@@ -82,7 +82,7 @@ Full_Array_Of_Pins = false;
 // Distance between pins (default 25.4)
 hole_spacing = 25.4; //.01
 // The diameter of the pegs (default: 5.8)
-Peg_Size = 5.8; // [3 : 0.1 : 8.4]
+Peg_Size = 5.8; //.01
 
 // How thick the pegboard is (default 5.0)
 Pegboard_Thickness = 5.00; //.01
@@ -129,7 +129,7 @@ max(
 pegboard_width = max((strength_factor * .5 * holder_total_x) + holder_total_x, hole_spacing + Peg_Size);
 
 // what is the $fn parameter for holders
-$fn = $preview ? 32 : 64;
+$fn = $preview ? 16 : 64;
 
 epsilon = 0.1;
 holder_cutout_side = holder_front_slot_width / 100;
@@ -185,11 +185,11 @@ module round_rect_ex(x, y, z, radius, taper_angle, corner_mask = [1, 1, 1, 1], t
       sy = corner_list[i][1];
 
       if (cornerMask[i]) {
-        // Rounded corner → place cylinder inset by radius
+        // Rounded corner -> place cylinder inset by radius
         translate([sx * (x / 2 - radius), sy * (y / 2 - radius), (z) / 2 - .5])
           cylinder(r=radius, h=1, center=true);
       } else {
-        // Square corner → place tiny cube at the true corner
+        // Square corner -> place tiny cube at the true corner
         translate([sx * ( (x - h) / 2), sy * ( (y - h) / 2), (z - h) / 2])
           cube([h, h, h], center=true);
       }
@@ -200,7 +200,7 @@ module round_rect_ex(x, y, z, radius, taper_angle, corner_mask = [1, 1, 1, 1], t
       sx = corner_list[i][0];
       sy = corner_list[i][1];
 
-      // If taper_mask[i] == 0 → no taper → use top size
+      // If taper_mask[i] == 0 -> no taper -> use top size
       bx = taper_mask[i] ? (x2 / 2 - radiusBottom) : (x / 2 - radius);
       by = taper_mask[i] ? (y2 / 2 - radiusBottom) : (y / 2 - radius);
       br = taper_mask[i] ? radiusBottom : radius;
@@ -480,8 +480,8 @@ module holders() {
         ]
       ) {
         // 0 = false, 1 = true
-        frontLeftCornerMask = Holder_Count_Deep > 1 && y + 1 < Holder_Count_Deep ? 0 : 1;
-        frontRightCornerMask = Holder_Count_Deep > 1 && y + 1 < Holder_Count_Deep ? 0 : 1;
+        frontLeftCornerMask = Holder_Count_Deep > 1 && (y + 1 < Holder_Count_Deep && !Offset_Holder_Rows) ? 0 : 1;
+        frontRightCornerMask = Holder_Count_Deep > 1 && (y + 1 < Holder_Count_Deep && !Offset_Holder_Rows ) ? 0 : 1;
         backLeftCornerMask = y == 0 || (Holder_Count_Deep > 1 && y > 0) ? 0 : 1;
         backtRightCornerMask = y == 0 || (Holder_Count_Deep > 1 && y > 0) ? 0 : 1;
 
@@ -643,8 +643,12 @@ module holder_front_cutout() {
 
       for (x = [1:Holder_Count_Wide]) {
         for (y = [0:Holder_Count_Deep - 1]) {
+                is_even = (y % 2 == 0);
+
           translateX = -(y * (holder_y_size)) - Holder_Width / 2 - Wall_Thickness - abs(sin(holder_angle)) - Offset_From_Pegboard - cutoutDepth / 2 + moveY - (Wall_Thickness / 2);
-          translateY = -holder_total_x / 2 + x_spacing / 2 + (x - 1) * x_spacing + Wall_Thickness / 2;
+                //   translateY = -holder_total_x / 2 + x_spacing / 2 + (x - 1) * x_spacing + Wall_Thickness / 2;
+                 translateY = -( (is_even || !Offset_Holder_Rows ? holder_total_x : holder_total_x_offset) / 2) + (holder_x_size / 2) + (x - 1) * x_spacing; // + Wall_Thickness / 2;
+
           translateZ = -(height / 2) - (Step_Offset_Amount > 0 && y > 0 ? y * Step_Offset_Amount : 0) + .1;
           echo(
             "Translating Cutout by:",
