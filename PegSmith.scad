@@ -32,9 +32,8 @@ Bottom_Thickness = 2; //.1
 // The angle to taper the hole. The taper starts at the top and tapers inward
 Taper_Angle = 0; // [0:89]
 
-
-Lower_Holder_Hole_Width = 0;//.1
-Lower_Holder_Hole_Depth = 0;//.1
+Lower_Holder_Hole_Width = 0; //.1
+Lower_Holder_Hole_Depth = 0; //.1
 
 // Width of the front slot (example to slip in a cable or make the tool snap from the side)
 Holder_Front_Slot_Width = 0; //.1
@@ -92,21 +91,24 @@ holder_spacing_y = max(Holder_Spacing_y);
 holder_width = Holder_Width; // + holder_spacing_x;
 holder_depth = Holder_Depth; // + holder_spacing_y;
 holder_sides = max(50, min(20, holder_depth * 2));
-holder_total_depth = Holder_Depth + holder_spacing_y + (Wall_Thickness * 2);
-holder_total_width_offset = (Holder_Count_Wide - 1) * (holder_width + holder_spacing_x  + Wall_Thickness) - holder_spacing_x + Wall_Thickness;
-holder_total_width = (Holder_Count_Wide * (holder_width)) + ( (Holder_Count_Wide - 1) * (holder_spacing_x)) + (Wall_Thickness * 2);
+
 top_holder_roundness = min(Corner_Radius, holder_depth / 2, holder_width / 2);
 holder_front_slot_width = min(Holder_Front_Slot_Width, holder_width);
-shrink = tan(abs(Taper_Angle)) * (holder_height - Bottom_Thickness);
+shrink = tan(abs(Taper_Angle)) * (holder_height);
 
 bottom_holder_width = max(0.01, (holder_width) - (Taper_Angle > 0 ? 2 * shrink : -2 * shrink));
 bottom_holder_depth = max(0.01, (holder_depth) - (Taper_Angle > 0 ? 2 * shrink : -2 * shrink));
 bottom_holder_roundness = min(Corner_Radius, bottom_holder_width / 2, bottom_holder_depth / 2);
 bottom_holder_hole_roundness = min(Corner_Radius, Lower_Holder_Hole_Depth / 2, Lower_Holder_Hole_Width / 2);
 
+holder_total_depth = Holder_Depth + holder_spacing_y + (Wall_Thickness * 2);
+holder_total_bottom_depth = (holder_total_depth - bottom_holder_depth) / 2 + holder_spacing_y;
+holder_total_width_offset = (Holder_Count_Wide - 1) * (holder_width + holder_spacing_x + Wall_Thickness) - holder_spacing_x + Wall_Thickness;
+holder_total_width = (Holder_Count_Wide * (holder_width)) + ( (Holder_Count_Wide - 1) * (holder_spacing_x)) + (Wall_Thickness * 2);
+
 pegboard_height =
 max(
-  
+
   (holder_height + (Step_Offset_Amount * (Holder_Count_Deep - 1))),
   hole_spacing + Peg_Size
 );
@@ -167,7 +169,7 @@ module round_rect_ex2(topX, topY, z, bottomX, bottomY, radius = 0, radiusBottom,
   _bottomX = is_undef(bottomX) ? topX : bottomX;
   _bottomY = is_undef(bottomY) ? topY : bottomY;
 
-  // echo("round_rect_ex2(", topX, topY, z, _bottomX, _bottomY, radius, radiusBottom, radiusCorners_mask);
+  echo("round_rect_ex2(", topX, topY, z, _bottomX, _bottomY, radius, radiusBottom, radiusCorners_mask);
 
   h = .1;
   // Corner order: TL, TR, BL, BR
@@ -179,30 +181,30 @@ module round_rect_ex2(topX, topY, z, bottomX, bottomY, radius = 0, radiusBottom,
   ];
   hull() {
 
-    // --- Create tope and bottom corners ---
+    // --- Create top and bottom corners ---
     for (i = [0:3]) {
       _radiusBottom = is_undef(radiusBottom) ? radius : (_radiusCornersMask[i] ? radiusBottom : 0);
       let (
         tx = corner_list[i][0] * (topX / 2 - (_radiusCornersMask[i] ? radius : 0)),
         ty = corner_list[i][1] * (topY / 2 - (_radiusCornersMask[i] ? radius : 0)),
-        tz = 0, // (z) / 2, // - (h / 2),
+        tz = z / 2 - (h),
         bx = corner_list[i][0] * (_bottomX / 2 - (_radiusCornersMask[i] ? _radiusBottom : 0)),
         by = corner_list[i][1] * (_bottomY / 2 - (_radiusCornersMask[i] ? _radiusBottom : 0)),
-        bz = -( (z / 2) )
+        bz = -(z / 2) + h
       ) {
         // echo(tz, bz);
         if (_radiusCornersMask[i]) {
           // Rounded corner -> place cylinder inset by radius
           translate([tx, ty, tz])
-            cylinder(r2=radius, r1=_radiusBottom, h=z, center=true);
+            cylinder(r2=radius, r1=_radiusBottom, h=h, center=true);
           //   cylinder(r=radius, h=h, center=true);
-          // translate([bx, by, bz])
-          //   cylinder(r=_radiusBottom, h=h, center=true);
+          translate([bx, by, bz])
+            cylinder(r=_radiusBottom, h=h, center=true);
         } else {
           // Square corner -> place tiny cube at the true corner
 
           translate([tx, ty, tz])
-            cube([h, h, z], center=true);
+            cube([h, h, h], center=true);
           translate([bx, by, bz])
             cube([h, h, h], center=true);
         }
@@ -296,52 +298,49 @@ module pinboard_clips() {
           ]
         )
           pin(j == 0);
-
       }
     }
   }
 }
 
 module pinboard() {
-    thickness = Wall_Thickness;
-  boardHeight = (pegboard_height) ; //* cos(holder_angle); // - (Peg_Size / 2);
+  thickness = Wall_Thickness;
+  boardHeight = (pegboard_height); //* cos(holder_angle); // - (Peg_Size / 2);
   pColor(rands(0, 1, 3)) {
-    translate([thickness/2,0,-boardHeight/2]) 
-    cube([thickness, pegboard_width, boardHeight], center=true);
-   
+    translate([thickness / 2, 0, -boardHeight / 2])
+      cube([thickness, pegboard_width, boardHeight], center=true);
   }
 }
 
 module holderboard() {
   thickness = Wall_Thickness;
-  boardHeight = (holder_height) ; //* cos(holder_angle); // - (Peg_Size / 2);
+  boardHeight = (holder_height); //* cos(holder_angle); // - (Peg_Size / 2);
   pColor(rands(0, 1, 3)) {
-    translate([thickness/2,0,-boardHeight/2]) 
-    cube([thickness, pegboard_width, boardHeight], center=true);
-   
+    translate([thickness / 2, 0, -boardHeight / 2])
+      cube([thickness, pegboard_width, boardHeight], center=true);
   }
 }
 
 module holder_row_container() {
   if (holder_depth > 0 && holder_width > 0) {
-      hull() {
-          translate([-Offset_From_Pegboard, 0, 0]) {
-            rotate_holder() {
-              pColor(rands(0, 1, 3)) {
-                let (
-                  translateY = (holder_total_depth/2) + (Wall_Thickness/2) // (holder_total_depth / 2) + (Wall_Thickness / 2) - (holder_total_depth * y)
-                ) {
-                  translate([translateY, 0, 0])
-                    round_rect_ex2(topX=Wall_Thickness, topY=pegboard_width, z=holder_height);
-                }
-              }
+    hull() {
+      translate([-Offset_From_Pegboard, 0, 0]) {
+        rotate_holder() {
+          pColor(rands(0, 1, 3)) {
+            let (
+              translateY = (holder_total_depth / 2) + (Wall_Thickness / 2) // (holder_total_depth / 2) + (Wall_Thickness / 2) - (holder_total_depth * y)
+            ) {
+              translate([translateY, 0, 0])
+                round_rect_ex2(topX=Wall_Thickness, topY=pegboard_width, z=holder_height);
             }
           }
-
-          translate([0, 0, 0]) {
-            holderboard();
-          }
         }
+      }
+
+      translate([0, 0, 0]) {
+        holderboard();
+      }
+    }
     difference() {
       for (y = [0:Holder_Count_Deep - 1]) {
 
@@ -349,64 +348,65 @@ module holder_row_container() {
         translateZ = -( (Step_Offset_Amount > 0 && y > 0 ? y * (Step_Offset_Amount) : 0) );
         translateX = -(y * holder_total_depth) + Wall_Thickness; // - holder_width / 2 - Offset_From_Pegboard - Wall_Thickness;
         translateY = 0;
-        isLastOffset = !(y % 2 == 0) && Offset_Holder_Rows && (y == Holder_Count_Deep -1 );
-      
+        isLastOffset = !(y % 2 == 0) && Offset_Holder_Rows && (y == Holder_Count_Deep - 1);
+
         if (y > 0 && Step_Offset_Amount > 0) {
-        hull() {
-          translate([-Offset_From_Pegboard, 0, 0]) {
-            rotate_holder() {
-              pColor(rands(0, 1, 3)) {
-                let (
-                  translateY = (holder_total_depth / 2) + (Wall_Thickness / 2) - (holder_total_depth * y)
-                ) {
-                  translate([translateY, 0, translateZ])
-                    round_rect_ex2(topX=Wall_Thickness, topY=pegboard_width, z=holder_height);
+          hull() {
+            translate([-Offset_From_Pegboard, 0, 0]) {
+              rotate_holder() {
+                pColor(rands(0, 1, 3)) {
+                  let (
+                    translateY = (holder_total_depth / 2) + (Wall_Thickness / 2) - (holder_total_depth * y)
+                  ) {
+                    translate([translateY, 0, translateZ])
+                      round_rect_ex2(topX=Wall_Thickness, topY=pegboard_width, z=holder_height);
+                  }
                 }
               }
             }
-          }
 
-          translate([0, 0, translateZ]) {
-            holderboard();
+            translate([0, 0, translateZ]) {
+              holderboard();
+            }
           }
-        }}
+        }
 
         pColor(rands(0, 1, 3)) {
 
           translate([-Offset_From_Pegboard, 0, 0]) {
             rotate_holder() {
-              translate(
-                [
-                  translateX,
-                  translateY,
-                  translateZ,
-                ]
-              ) {
+              translate([translateX, translateY, translateZ]) {
                 radiusFrontLeftCorner = Holder_Count_Deep > 1 && (y < Holder_Count_Deep - 1) && Strict_Holder_Height ? 0 : 1;
                 radiusFrontRightCorner = radiusFrontLeftCorner;
                 radiusBackLeftCorner = 0;
                 radiusBackRightCorner = 0;
-                isLastOffset = !(y % 2 == 0) && Offset_Holder_Rows && (y == Holder_Count_Deep -1 );
+                isLastOffset = !(y % 2 == 0) && Offset_Holder_Rows && (y == Holder_Count_Deep - 1);
                 let (
                   topX = holder_total_depth,
                   topY = isLastOffset ? holder_total_width_offset : pegboard_width,
+                  bottomX = topX, //(y == Holder_Count_Deep - 1 ? (holder_total_bottom_depth) : topX),
+                  bottomY = topY, //(isLastOffset  ?  topY :pegboard_width - Wall_Thickness * 2),
                   z = (holder_height),
                   radius = top_holder_roundness + (Wall_Thickness / 2),
-                  radiusBottom = bottom_holder_roundness + (Wall_Thickness / 2),
+                  radiusBottom = Step_Offset_Amount > 0 && y < Holder_Count_Deep - 1 ? radiusBottom : top_holder_roundness + (Wall_Thickness / 2),
                   radiusCorners_mask = [radiusFrontLeftCorner, radiusBackLeftCorner, radiusFrontRightCorner, radiusBackRightCorner]
                 ) {
                   echo(
                     "round_rect_ex2",
                     topX=topX,
                     topY=topY,
+                    bottomX=bottomX,
+                    bottomY=bottomY,
                     z=z,
                     radius=radius,
-                    radiusBottom=Step_Offset_Amount > 0 && y < Holder_Count_Deep - 1 ? radiusBottom : 0
+                    radiusBottom=radiusBottom
                   );
 
                   round_rect_ex2(
                     topX=topX,
                     topY=topY,
+                    bottomX=bottomX,
+                    bottomY=bottomY,
                     z=z,
                     radius=radius,
                     radiusBottom=radiusBottom,
@@ -449,7 +449,7 @@ module holder_row_container() {
                   topX = holder_total_depth,
                   topY = pegboard_width - Wall_Thickness * 2,
                   z = (pegboard_height),
-                  bottomX = (holder_total_depth),
+                  bottomX = (holder_total_bottom_depth),
                   bottomY = pegboard_width - Wall_Thickness * 2,
                   radius = 0,
                   radiusBottom = bottom_holder_roundness + (Wall_Thickness / 2),
@@ -520,7 +520,7 @@ module holder_holes() {
                   bottomX=bottom_holder_depth,
                   bottomY=bottom_holder_width,
                   radius=top_holder_roundness,
-                  radiusBottom=min(top_holder_roundness, bottom_holder_width / 2, bottom_holder_depth / 2)
+                  radiusBottom=bottom_holder_roundness
                 );
               }
             }
@@ -528,7 +528,7 @@ module holder_holes() {
             // ---------------------------
             //  EXTENSION
             // ---------------------------
-            if (  (Lower_Holder_Hole_Width > 0 && Lower_Holder_Hole_Depth > 0) && (Bottom_Thickness > 0)) {
+            if ( (Lower_Holder_Hole_Width > 0 && Lower_Holder_Hole_Depth > 0) && (Bottom_Thickness > 0)) {
 
               scale = bottom_holder_width / Holder_Depth;
               radiusBottom = min(top_holder_roundness * scale, bottom_holder_hole_roundness);
@@ -608,7 +608,7 @@ module holder_front_cutout() {
               // ---------------------------
               //   EXTENSION
               // ---------------------------
-              if (((Lower_Holder_Hole_Width > 0 && Lower_Holder_Hole_Depth > 0) || Bottom_Thickness == 0)) {
+              if ( ( (Lower_Holder_Hole_Width > 0 && Lower_Holder_Hole_Depth > 0) || Bottom_Thickness == 0) ) {
                 z = Bottom_Thickness + 1;
                 translateZ2 = -( (y * Step_Offset_Amount) + holder_height / 2 - z / 2 + .5);
 
