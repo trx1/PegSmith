@@ -99,6 +99,7 @@ shrink = tan(abs(Taper_Angle)) * (holder_height);
 bottom_holder_width = max(0.01, (holder_width) - (Taper_Angle > 0 ? 2 * shrink : -2 * shrink));
 bottom_holder_depth = max(0.01, (holder_depth) - (Taper_Angle > 0 ? 2 * shrink : -2 * shrink));
 bottom_holder_roundness = min(Corner_Radius, bottom_holder_width / 2, bottom_holder_depth / 2);
+lower_holder_hole_roundness = min(Corner_Radius, Lower_Holder_Hole_Width / 2, Lower_Holder_Hole_Depth / 2);
 bottom_holder_hole_roundness = min(Corner_Radius, Lower_Holder_Hole_Depth / 2, Lower_Holder_Hole_Width / 2);
 
 holder_total_depth = Holder_Depth + holder_spacing_y + (Wall_Thickness * 2);
@@ -504,9 +505,6 @@ module holder_holes() {
             //  EXTENSION
             // ---------------------------
             if ( (Lower_Holder_Hole_Width > 0 && Lower_Holder_Hole_Depth > 0) && (Bottom_Thickness > 0)) {
-
-              scale = bottom_holder_width / Holder_Depth;
-              radiusBottom = bottom_holder_roundness;
               z = Bottom_Thickness + 1;
               translateZ2 = -( (y * Step_Offset_Amount) + holder_height / 2 - z / 2 + .5);
 
@@ -518,7 +516,7 @@ module holder_holes() {
                     topX=(Lower_Holder_Hole_Width > 0 && Lower_Holder_Hole_Depth > 0) ? Lower_Holder_Hole_Depth : bottom_holder_depth,
                     topY=(Lower_Holder_Hole_Width > 0 && Lower_Holder_Hole_Depth > 0) ? Lower_Holder_Hole_Width : bottom_holder_width,
                     z=z,
-                    radius=radiusBottom
+                    radius=lower_holder_hole_roundness
                   );
               }
             }
