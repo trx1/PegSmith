@@ -110,7 +110,7 @@ holder_total_width_offset = holder_total_width - holder_width - Wall_Thickness; 
 pegboard_height =
 max(
 
-  (holder_height + (Step_Offset_Amount * (Holder_Count_Deep - 1))),
+  (holder_height + (Step_Offset_Amount * (Holder_Count_Deep - 1))) * cos(holder_angle),
   hole_spacing + Peg_Size
 );
 
@@ -447,7 +447,7 @@ module holder_row_support(y, translateZ, isOuter, isLastOffset, translateY, z, r
           }
           translate(
             [
-              translateX + holder_total_depth,
+              translateX + holder_total_depth - (Wall_Thickness *2),
               translateY,
               translateZ,
             ]
@@ -755,7 +755,9 @@ module rotate_holder() {
  */
 module finalHolder() {
 
+if (Full_Array_Of_Pins){
   pinboard();
+}
 
   difference() {
     holder_row_container();
