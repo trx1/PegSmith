@@ -755,7 +755,7 @@ module rotate_holder() {
  */
 module finalHolder() {
 
-if (Full_Array_Of_Pins){
+if (Full_Array_Of_Pins || holder_height < hole_spacing + Peg_Size){
   pinboard();
 }
 
