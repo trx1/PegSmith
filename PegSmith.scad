@@ -266,7 +266,7 @@ module pin(clip) {
 
       translate([-1, -0, 0]) {
         difference() {
-          cylinder(r=r_tube + 1, h=h, center=false);
+          cylinder(r=r_tube + 1.1, h=h, center=false);
           cylinder(r=r_tube, h=h, center=false);
         }
       }
@@ -293,12 +293,12 @@ module pin(clip) {
           difference() {
 
             rotate_extrude(angle=angle - 1)
-              translate([r_bend, -0, -0]) {
-                circle(r=r_tube + 1);
+              translate([r_bend, 0, 0]) {
+                circle(r=r_tube + 1.1);
               }
 
             rotate_extrude(angle=angle - 1)
-              translate([r_bend - 1, -0, -0]) {
+              translate([r_bend - 1, 0, 0]) {
                 circle(r=r_tube);
               }
           }
@@ -447,7 +447,7 @@ module holder_row_support(y, translateZ, isOuter, isLastOffset, translateY, z, r
           }
           translate(
             [
-              translateX + holder_total_depth - (Wall_Thickness *2),
+              translateX + holder_total_depth - (Wall_Thickness * 2),
               translateY,
               translateZ,
             ]
@@ -514,7 +514,6 @@ module holder_row_container() {
 
             holder_row_support(y=y, translateZ=translateZ, isLastOffset=isLastOffset, isOuter=false, translateY=translateY, z=z, radius=radius, radiusBottom=radius, radiusCorners_mask=radiusCorners_mask);
           }
-         
         }
 
         pColor(rands(0, 1, 3)) {
@@ -540,8 +539,6 @@ module holder_row_container() {
         }
       }
 
-      
-
       if (Holder_Angle > 0 && Step_Offset_Amount > 0 && Holder_Count_Deep > 1) {
 
         outer = [
@@ -558,7 +555,6 @@ module holder_row_container() {
       }
     }
   }
- 
 }
 
 /*
@@ -755,9 +751,9 @@ module rotate_holder() {
  */
 module finalHolder() {
 
-if (Full_Array_Of_Pins || holder_height < hole_spacing + Peg_Size){
-  pinboard();
-}
+  if (Full_Array_Of_Pins || holder_height < hole_spacing + Peg_Size) {
+    pinboard();
+  }
 
   difference() {
     holder_row_container();
