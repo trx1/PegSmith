@@ -16,7 +16,7 @@ Holder_Height = 15; //.1
 /* [Holder Counts] */
 
 // how many holders along the pegboard
-Holder_Count_Wide = 2; // [0:50]
+Holder_Count_Wide = 2; // [1:50]
 
 // how many holders outward from the pegboard
 Holder_Count_Deep = 2; // [1:25]
@@ -41,9 +41,9 @@ Holder_Front_Slot_Width = 0; //.1
 /* [Holder Positioning Adjustments] */
 
 // Distance between holders along the width of the pegboard (it will not go below Wall_Thickness)
-Holder_Spacing_x = 0.00; //.1
+Holder_Spacing_Between = 0.00; //.1
 // Distance between holders outward from the pegboard (it will not go below Wall_Thickness)
-Holder_Spacing_y = 0.00; //.1
+Holder_Spacing_Front_Back = 0.00; //.1
 
 // offset from the peg board, typically 0 unless you have an object that needs clearance
 Offset_From_Pegboard = 0.0; //.1
@@ -71,7 +71,7 @@ Full_Array_Of_Pins = false;
 /* [Pegboard Info] */
 
 // Distance between pins (default 25.4)
-hole_spacing = 25.4; //.01
+Peg_Spacing = 25.4; //.01
 // The diameter of the pegs (default: 5.8)
 Peg_Size = 5.8; //.01
 
@@ -80,16 +80,15 @@ Pegboard_Thickness = 5.00; //.01
 
 /* [Hidden] */
 
-Strict_Holder_Height = true; //remove this
 taper_angle = -Taper_Angle;
 
 strength_factor = Strength_Factor_Percent / 100;
 holder_height = max(Holder_Height + Bottom_Thickness, 0);
 holder_angle = Holder_Angle;
-holder_spacing_x = max(Wall_Thickness, Holder_Spacing_x);
-holder_spacing_y = max(Holder_Spacing_y);
-holder_width = Holder_Width; // + holder_spacing_x;
-holder_depth = Holder_Depth; // + holder_spacing_y;
+holder_spacing_between = max(Wall_Thickness, Holder_Spacing_Between);
+holder_spacing_front_back = max(Holder_Spacing_Front_Back);
+holder_width = Holder_Width; // + Holder_Spacing_Between;
+holder_depth = Holder_Depth; // + Holder_Spacing_Front_Back;
 holder_sides = max(50, min(20, holder_depth * 2));
 
 top_holder_roundness = min(Corner_Radius, holder_depth / 2, holder_width / 2);
@@ -102,20 +101,20 @@ bottom_holder_roundness = min(Corner_Radius, bottom_holder_width / 2, bottom_hol
 lower_holder_hole_roundness = min(Corner_Radius, Lower_Holder_Hole_Width / 2, Lower_Holder_Hole_Depth / 2);
 bottom_holder_hole_roundness = min(Corner_Radius, Lower_Holder_Hole_Depth / 2, Lower_Holder_Hole_Width / 2);
 
-holder_total_depth = Holder_Depth + holder_spacing_y + (Wall_Thickness * 2);
-holder_total_bottom_depth = (holder_total_depth - bottom_holder_depth) / 2 + holder_spacing_y;
+holder_total_depth = Holder_Depth + holder_spacing_front_back + (Wall_Thickness * 2);
+holder_total_bottom_depth = (holder_total_depth - bottom_holder_depth) / 2 + holder_spacing_front_back;
 
-holder_total_width = (Holder_Count_Wide * (holder_width)) + ( (Holder_Count_Wide - 1) * (holder_spacing_x)) + (Wall_Thickness * 2);
-holder_total_width_offset = holder_total_width - holder_width - Wall_Thickness; // (Holder_Count_Wide - 1) * (holder_width + holder_spacing_x + Wall_Thickness) - holder_spacing_x + Wall_Thickness;
+holder_total_width = (Holder_Count_Wide * (holder_width)) + ( (Holder_Count_Wide - 1) * (holder_spacing_between)) + (Wall_Thickness * 2);
+holder_total_width_offset = holder_total_width - holder_width - Wall_Thickness; // (Holder_Count_Wide - 1) * (holder_width + holder_spacing_between + Wall_Thickness) - holder_spacing_between + Wall_Thickness;
 pegboard_height =
 max(
 
   (holder_height + (Step_Offset_Amount * (Holder_Count_Deep - 1))) * cos(holder_angle),
-  hole_spacing + Peg_Size
+  Peg_Spacing + Peg_Size
 );
 
 //- hole_size - wall_thickness;
-pegboard_width = max((strength_factor * .5 * holder_total_width) + holder_total_width, hole_spacing + Peg_Size);
+pegboard_width = max((strength_factor * .5 * holder_total_width) + holder_total_width, Peg_Spacing + Peg_Size);
 
 // what is the $fn parameter for holders
 $fn = $preview ? 16 : 64;
@@ -127,8 +126,8 @@ $fs = 1;
 echo("shrink: ", shrink);
 echo(str("holder_depth: ", holder_depth));
 echo(str("holder_width: ", holder_width));
-echo(str("Holder_Spacing_x: ", Holder_Spacing_x));
-echo(str("Holder_Spacing_y: ", Holder_Spacing_y));
+echo(str("holder_spacing_between: ", holder_spacing_between));
+echo(str("holder_spacing_front_back: ", holder_spacing_front_back));
 echo(str("holder_height: ", holder_height));
 echo(str("bottom_holder_width: ", bottom_holder_width));
 echo(str("bottom_holder_depth: ", bottom_holder_depth));
@@ -142,7 +141,7 @@ echo(str("bottom_holder_roundness: ", bottom_holder_roundness));
 echo(str("clip_height: ", clip_height));
 echo(str("pegboard_width: ", pegboard_width));
 echo(str("pegboard_height: ", pegboard_height));
-echo(str("hole_spacing: ", hole_spacing));
+echo(str("Peg_Spacing: ", Peg_Spacing));
 
 /*
  * Preview color - applies color only in preview mode
@@ -326,15 +325,15 @@ module pinboard_clips() {
 
   pegboard_height =
     Full_Array_Of_Pins ? pegboard_height
-    : hole_spacing + Peg_Size;
+    : Peg_Spacing + Peg_Size;
 
   rotate([0, 90, 0]) {
-    for (i = [0:floor((pegboard_width - (Peg_Size)) / hole_spacing)]) {
-      for (j = [0:floor(( (pegboard_height - (Peg_Size)) / hole_spacing))]) {
+    for (i = [0:floor((pegboard_width - (Peg_Size)) / Peg_Spacing)]) {
+      for (j = [0:floor(( (pegboard_height - (Peg_Size)) / Peg_Spacing))]) {
         translate(
           [
-            j * hole_spacing + (Peg_Size / 2),
-            -hole_spacing * (floor((pegboard_width - (Peg_Size)) / hole_spacing) / 2) + i * hole_spacing,
+            j * Peg_Spacing + (Peg_Size / 2),
+            -Peg_Spacing * (floor((pegboard_width - (Peg_Size)) / Peg_Spacing) / 2) + i * Peg_Spacing,
             0,
           ]
         )
@@ -349,7 +348,7 @@ module pinboard_clips() {
  */
 module pinboard() {
   thickness = Wall_Thickness;
-  boardHeight = (pegboard_height); //* cos(holder_angle); // - (Peg_Size / 2);
+  boardHeight = (Full_Array_Of_Pins ? pegboard_height : Peg_Spacing + Peg_Size); //* cos(holder_angle); // - (Peg_Size / 2);
   pColor(rands(0, 1, 3)) {
     translate([thickness / 2, 0, -boardHeight / 2])
       cube([thickness, pegboard_width, boardHeight], center=true);
@@ -563,7 +562,7 @@ module holder_row_container() {
  */
 module holder_holes() {
 
-  holeDepth = (Bottom_Thickness > 0 ? Holder_Height : max(holder_height, Strict_Holder_Height ? holder_height : pegboard_height)) + .2;
+  holeDepth = (Bottom_Thickness > 0 ? Holder_Height : max(holder_height,  holder_height )) + .2;
 
   if (Holder_Width > 0 && Holder_Depth > 0) {
     translate([-Offset_From_Pegboard, 0, 0]) {
@@ -571,7 +570,7 @@ module holder_holes() {
         isStepped = Step_Offset_Amount > 0 && y > 0;
         is_even = (y % 2 == 0);
         rotate_holder() {
-          spacing = holder_width + holder_spacing_x;
+          spacing = holder_width + holder_spacing_between;
 
           for (x = [1:Holder_Count_Wide - (is_even || !Offset_Holder_Rows || Holder_Count_Wide == 1 ? 0 : 1)]) {
             total = (Holder_Count_Wide + (!is_even && Offset_Holder_Rows ? 0 : 1)) * spacing;
@@ -636,7 +635,7 @@ module holder_holes() {
 module holder_front_cutout() {
 
   if (holder_front_slot_width > 0) {
-    height = (Bottom_Thickness > 0 ? Holder_Height : max(holder_height, Strict_Holder_Height ? holder_height : pegboard_height)) + .2;
+    height = (Bottom_Thickness > 0 ? Holder_Height : max(holder_height, holder_height )) + .2;
     //echo("cutout height:", height);
     if (holder_depth > 0 && holder_width > 0) {
 
@@ -648,7 +647,7 @@ module holder_front_cutout() {
       translate([-Offset_From_Pegboard, 0, 0]) {
         for (y = [0:Holder_Count_Deep - 1]) {
           is_even = (y % 2 == 0);
-          spacing = holder_width + holder_spacing_x;
+          spacing = holder_width + holder_spacing_between;
           rotate_holder() {
             for (x = [1:Holder_Count_Wide - (is_even || !Offset_Holder_Rows || Holder_Count_Wide == 1 ? 0 : 1)]) {
               total = (Holder_Count_Wide + (!is_even && Offset_Holder_Rows ? 0 : 1)) * spacing;
@@ -751,9 +750,9 @@ module rotate_holder() {
  */
 module finalHolder() {
 
-  if (Full_Array_Of_Pins || holder_height < hole_spacing + Peg_Size) {
+  //if (Full_Array_Of_Pins || pegboard_height < Peg_Spacing + Peg_Size) {
     pinboard();
-  }
+  //}
 
   difference() {
     holder_row_container();
